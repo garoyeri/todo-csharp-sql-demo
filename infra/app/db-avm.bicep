@@ -24,8 +24,9 @@ param tags object = {}
 
 var defaultDatabaseName = 'Todo'
 var actualDatabaseName = !empty(sqlDatabaseName) ? sqlDatabaseName : defaultDatabaseName
+var Gb = 1024 * 1024 * 1024
 
-module sqlServer 'br/public:avm/res/sql/server:0.2.0' = {
+module sqlServer 'br/public:avm/res/sql/server:0.15.1' = {
   name: 'sqlservice'
   params: {
     name: sqlServiceName
@@ -37,6 +38,12 @@ module sqlServer 'br/public:avm/res/sql/server:0.2.0' = {
     databases: [
       {
         name: actualDatabaseName
+        sku: {
+          name: 'S1'
+          capacity: 20
+        }
+        maxSizeBytes: 100 * Gb
+        zoneRedundant: false
       }
     ]
     firewallRules: [
@@ -49,7 +56,7 @@ module sqlServer 'br/public:avm/res/sql/server:0.2.0' = {
   }
 }
 
-module deploymentScript 'br/public:avm/res/resources/deployment-script:0.1.3' = {
+module deploymentScript 'br/public:avm/res/resources/deployment-script:0.5.1' = {
   name: 'deployment-script'
   params: {
     kind: 'AzureCLI'
@@ -59,34 +66,32 @@ module deploymentScript 'br/public:avm/res/resources/deployment-script:0.1.3' = 
     retentionInterval: 'PT1H'
     timeout: 'PT5M'
     cleanupPreference: 'OnSuccess'
-    environmentVariables:{
-      secureList: [
-        {
-          name: 'APPUSERNAME'
-          value: appUser
-        }
-        {
-          name: 'APPUSERPASSWORD'
-          secureValue: appUserPassword
-        }
-        {
-          name: 'DBNAME'
-          value: actualDatabaseName
-        }
-        {
-          name: 'DBSERVER'
-          value: '${sqlServer.outputs.name}${environment().suffixes.sqlServerHostname}'
-        }
-        {
-          name: 'SQLCMDPASSWORD'
-          secureValue: sqlAdminPassword
-        }
-        {
-          name: 'SQLADMIN'
-          value: sqlAdmin
-        }
-      ]
-    }
+    environmentVariables: [
+      {
+        name: 'APPUSERNAME'
+        value: appUser
+      }
+      {
+        name: 'APPUSERPASSWORD'
+        secureValue: appUserPassword
+      }
+      {
+        name: 'DBNAME'
+        value: actualDatabaseName
+      }
+      {
+        name: 'DBSERVER'
+        value: '${sqlServer.outputs.name}${environment().suffixes.sqlServerHostname}'
+      }
+      {
+        name: 'SQLCMDPASSWORD'
+        secureValue: sqlAdminPassword
+      }
+      {
+        name: 'SQLADMIN'
+        value: sqlAdmin
+      }
+    ]
     scriptContent: '''
 wget https://github.com/microsoft/go-sqlcmd/releases/download/v0.8.1/sqlcmd-v0.8.1-linux-x64.tar.bz2
 tar x -f sqlcmd-v0.8.1-linux-x64.tar.bz2 -C .
