@@ -1,4 +1,4 @@
-targetScope = 'subscription'
+targetScope = 'resourceGroup'
 
 @minLength(1)
 @maxLength(64)
@@ -19,7 +19,7 @@ param applicationInsightsName string = ''
 param appServicePlanName string = ''
 param keyVaultName string = ''
 param logAnalyticsName string = ''
-param resourceGroupName string = ''
+//param resourceGroupName string = ''
 param sqlServerName string = ''
 param webServiceName string = ''
 param apimServiceName string = ''
@@ -47,16 +47,16 @@ var resourceToken = toLower(uniqueString(subscription().id, environmentName, loc
 var tags = { 'azd-env-name': environmentName }
 
 // Organize resources in a resource group
-resource rg 'Microsoft.Resources/resourceGroups@2021-04-01' = {
-  name: !empty(resourceGroupName) ? resourceGroupName : '${abbrs.resourcesResourceGroups}${environmentName}'
-  location: location
-  tags: tags
-}
+// resource rg 'Microsoft.Resources/resourceGroups@2021-04-01' = {
+//   name: !empty(resourceGroupName) ? resourceGroupName : '${abbrs.resourcesResourceGroups}${environmentName}'
+//   location: location
+//   tags: tags
+// }
 
 // The application frontend
 module web './app/web-appservice-avm.bicep' = {
   name: 'web'
-  scope: rg
+  //scope: rg
   params: {
     name: !empty(webServiceName) ? webServiceName : '${abbrs.webSitesAppService}web-${resourceToken}'
     location: location
@@ -70,7 +70,7 @@ module web './app/web-appservice-avm.bicep' = {
 // The application backend
 module api './app/api-appservice-avm.bicep' = {
   name: 'api'
-  scope: rg
+  //scope: rg
   params: {
     name: !empty(apiServiceName) ? apiServiceName : '${abbrs.webSitesAppService}api-${resourceToken}'
     location: location
@@ -94,7 +94,7 @@ module api './app/api-appservice-avm.bicep' = {
 // Give the API access to KeyVault
 module accessKeyVault 'br/public:avm/res/key-vault/vault:0.3.5' = {
   name: 'accesskeyvault'
-  scope: rg
+  //scope: rg
   params: {
     name: keyVault.outputs.name
     enableRbacAuthorization: false
@@ -138,7 +138,7 @@ module accessKeyVault 'br/public:avm/res/key-vault/vault:0.3.5' = {
 // The application database
 module sqlService './app/db-avm.bicep' = {
   name: 'sqldeploymentscript'
-  scope: rg
+  //scope: rg
   params: {
     location: location
     appUserPassword: appUserPassword
@@ -151,7 +151,7 @@ module sqlService './app/db-avm.bicep' = {
 // Create an App Service Plan to group applications under the same payment plan and SKU
 module appServicePlan 'br/public:avm/res/web/serverfarm:0.1.0' = {
   name: 'appserviceplan'
-  scope: rg
+  //scope: rg
   params: {
     name: !empty(appServicePlanName) ? appServicePlanName : '${abbrs.webServerFarms}${resourceToken}'
     sku: {
@@ -168,7 +168,7 @@ module appServicePlan 'br/public:avm/res/web/serverfarm:0.1.0' = {
 // Create a keyvault to store secrets
 module keyVault 'br/public:avm/res/key-vault/vault:0.3.5' = {
   name: 'keyvault'
-  scope: rg
+  //scope: rg
   params: {
     name: !empty(keyVaultName) ? keyVaultName : '${abbrs.keyVaultVaults}${resourceToken}'
     location: location
@@ -184,7 +184,7 @@ module keyVault 'br/public:avm/res/key-vault/vault:0.3.5' = {
 // Monitor application with Azure Monitor
 module monitoring 'br/public:avm/ptn/azd/monitoring:0.1.0' = {
   name: 'monitoring'
-  scope: rg
+  //scope: rg
   params: {
     applicationInsightsName: !empty(applicationInsightsName) ? applicationInsightsName : '${abbrs.insightsComponents}${resourceToken}'
     logAnalyticsName: !empty(logAnalyticsName) ? logAnalyticsName : '${abbrs.operationalInsightsWorkspaces}${resourceToken}'
@@ -197,7 +197,7 @@ module monitoring 'br/public:avm/ptn/azd/monitoring:0.1.0' = {
 // Creates Azure API Management (APIM) service to mediate the requests between the frontend and the backend API
 module apim 'br/public:avm/res/api-management/service:0.2.0' = if (useAPIM) {
   name: 'apim-deployment'
-  scope: rg
+  //scope: rg
   params: {
     name: !empty(apimServiceName) ? apimServiceName : '${abbrs.apiManagementService}${resourceToken}'
     publisherEmail: 'noreply@microsoft.com'
@@ -226,7 +226,7 @@ module apim 'br/public:avm/res/api-management/service:0.2.0' = if (useAPIM) {
 //Configures the API settings for an api app within the Azure API Management (APIM) service.
 module apimApi 'br/public:avm/ptn/azd/apim-api:0.1.0' = if (useAPIM) {
   name: 'apim-api-deployment'
-  scope: rg
+  //scope: rg
   params: {
     apiBackendUrl: api.outputs.SERVICE_API_URI
     apiDescription: 'This is a simple Todo API'
