@@ -3,6 +3,6 @@
         "@playwright/test": "^1.22.2",
         "@types/uuid": "^8.3.4",
         "dotenv": "^16.0.1",
-        "uuid": "^8.3.2"
+        "uuid": "^13.0.0"
     }
 }
