@@ -18,13 +18,13 @@
     "history": "^5.3.0",
     "dotenv": "^16.5.0",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1",
+    "react-dom": "^19.2.1",
     "react-router-dom": "^6.30.0",
     "web-vitals": "^3.5.2"
   },
   "devDependencies": {
     "@types/react": "^18.3.20",
-    "@types/react-dom": "^18.3.6",
+    "@types/react-dom": "^19.2.3",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
     "@vitejs/plugin-react-swc": "^3.9.0",
