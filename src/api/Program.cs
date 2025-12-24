@@ -47,6 +47,5 @@ app.UseStaticFiles(new StaticFileOptions
 
 
 app.MapGroup("/lists")
-    .MapTodoApi()
-    .WithOpenApi();
+    .MapTodoApi();
 app.Run();
